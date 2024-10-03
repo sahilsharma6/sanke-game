@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+      integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <style>
+      .up-btn,
+      .down-btn,
+      .left-btn,
+      .right-btn {
+        border: none;
+        outline: none;
+        background: none;
+        cursor: pointer;
+        padding: 10px 20px;
+        background-color: rgb(0, 132, 255);
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="text-3xl text-center">Snake Game</h1>
+
+    <canvas class="canvas border-4 h-96 w-96 mx-auto my-10"></canvas>
+
+    <div>
+      <div class="flex mx-auto gap-2 items-center justify-center">
+        <button class="text-center border up-btn">
+          <i class="fa-solid fa-sort-up"></i>
+          <!-- UP -->
+        </button>
+      </div>
+      <div class="flex mx-auto gap-2 mt-2 items-center justify-center -3">
+        <button class="left-btn">
+          <!-- LEFT -->
+          <i class="fa-solid fa-caret-left"></i>
+        </button>
+        <button class="down-btn">
+          <!-- DOWN -->
+          <i class="fa-solid fa-sort-down"></i>
+        </button>
+        <button class="right-btn">
+          <!-- RIGHT -->
+          <i class="fa-solid fa-caret-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="mx-auto">
+      <button
+        id="startBtn"
+        class="bg-blue-500 text-white my-2 p-2 w-auto md:w-96 text-center"
+      >
+        Start
+      </button>
+      <button
+        id="stopBtn"
+        class="bg-red-500 text-white my-2 p-2 w-auto md:w-96 text-center"
+      >
+        Stop
+      </button>
+    </div>
+
+    <script>
+      const canvas = document.querySelector(".canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = 300;
+      canvas.height = 300;
+
+      let randomX = Math.floor(Math.random() * (canvas.width / 10)) * 10;
+      let randomY = Math.floor(Math.random() * (canvas.height / 10)) * 10;
+
+      console.log(
+        // (canvas.width / 10) * Math.random(),
+        canvas.height,
+        randomX,
+        randomY
+      );
+      let snake = [{ x: 10, y: 10 }];
+      // let food = { x: randomX, y: randomY };
+      let food = { x: 40, y: 100 };
+      let direction = { x: 10, y: 0 }; // Start moving right
+      let gameInterval;
+      let isGameRunning = false;
+
+      function drawSnake() {
+        ctx.fillStyle = "green";
+        snake.forEach((segment) => {
+          // document.write("<p>" + segment.x + "," + segment.y + "</p>");
+          console.log(segment);
+          ctx.fillRect(segment.x, segment.y, 10, 10);
+        });
+      }
+
+      function drawFood() {
+        ctx.fillStyle = "red";
+        ctx.fillRect(food.x, food.y, 10, 10);
+      }
+
+      function moveSnake() {
+        const head = {
+          x: snake[0].x + direction.x,
+          y: snake[0].y + direction.y,
+        };
+
+        // Check if food is eaten
+        if (head.x === food.x && head.y === food.y) {
+          snake.unshift(head); // Add new head to snake
+          spawnFood(); // Spawn new food
+        } else {
+          snake.unshift(head); // Move snake forward
+          snake.pop(); // Remove last segment
+        }
+      }
+
+      const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      arr.unshift(0);
+      console.log(arr);
+
+      function checkCollision() {
+        const head = snake[0];
+
+        // Check wall collisions
+        if (
+          head.x < 0 ||
+          head.x >= canvas.width ||
+          head.y < 0 ||
+          head.y >= canvas.height
+        ) {
+          endGame();
+        }
+
+        // Check self-collision
+        for (let i = 1; i < snake.length; i++) {
+          if (head.x === snake[i].x && head.y === snake[i].y) {
+            endGame();
+          }
+        }
+      }
+
+      function spawnFood() {
+        food.x = Math.floor(Math.random() * (canvas.width / 10)) * 10;
+        food.y = Math.floor(Math.random() * (canvas.height / 10)) * 10;
+
+        // Ensure food does not spawn on the snake
+        snake.forEach((segment) => {
+          if (segment.x === food.x && segment.y === food.y) {
+            spawnFood();
+          }
+        });
+      }
+
+      function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSnake();
+        drawFood();
+        moveSnake();
+        checkCollision();
+      }
+
+      function startGame() {
+        if (!isGameRunning) {
+          isGameRunning = true;
+          gameInterval = setInterval(gameLoop, 100); // Adjust speed here
+        }
+      }
+
+      function stopGame() {
+        if (isGameRunning) {
+          clearInterval(gameInterval);
+          isGameRunning = false;
+          alert("Game Over!");
+        }
+      }
+
+      function endGame() {
+        stopGame();
+      }
+
+      document.getElementById("startBtn").addEventListener("click", startGame);
+      document.getElementById("stopBtn").addEventListener("click", stopGame);
+
+      const upBtn = document.querySelector(".up-btn");
+      const downBtn = document.querySelector(".down-btn");
+      const leftBtn = document.querySelector(".left-btn");
+      const rightBtn = document.querySelector(".right-btn");
+      // console.log(object);
+      downBtn.addEventListener("click", () => {
+        if (direction.y === 0) direction = { x: 0, y: 10 };
+      });
+      upBtn.addEventListener("click", () => {
+        if (direction.y === 0) direction = { x: 0, y: -10 };
+      });
+      leftBtn.addEventListener("click", () => {
+        if (direction.x === 0) direction = { x: -10, y: 0 };
+      });
+      rightBtn.addEventListener("click", () => {
+        if (direction.x === 0) direction = { x: 10, y: 0 };
+      });
+
+      document.addEventListener("keydown", (event) => {
+        switch (event.key) {
+          case "ArrowUp":
+            if (direction.y === 0) direction = { x: 0, y: -10 };
+            break;
+          case "ArrowDown":
+            if (direction.y === 0) direction = { x: 0, y: 10 };
+            break;
+          case "ArrowLeft":
+            if (direction.x === 0) direction = { x: -10, y: 0 };
+            break;
+          case "ArrowRight":
+            if (direction.x === 0) direction = { x: 10, y: 0 };
+            break;
+        }
+      });
+    </script>
+  </body>
+</html>
